@@ -1,22 +1,4 @@
-class Node
-  include Comparable
-  
-  attr_accessor :data, :left, :right
-  
-  def initialize(data = nil)
-    @data = data
-    @left = nil
-    @right = nil
-  end
-  
-  def <=>(val)
-    if val.is_a? Node
-      @data <=> val.data
-    else
-      @data <=> val
-    end
-  end
-end
+require './node.rb'
 
 class Tree
   attr_accessor :root
@@ -44,13 +26,11 @@ class Tree
   
   def show(rn = @root)
     print "#{rn.data} "
-    print "Le:"
     show(rn.left) unless rn.left == nil
-    print "Ri:"
     show(rn.right) unless rn.right == nil
   end
   
-  def insert(n, rn)
+  def insert(n, rn = @root)
     res = rn <=> n
     case res
     when 1
@@ -63,23 +43,125 @@ class Tree
   end
   
   def find(n, rn = @root)
-    nodeFound = nil
     res = rn <=> n
     case res
     when 1
-      find(n, rn.left) if rn.left != nil
+      return find(n, rn.left) if rn.left != nil
     when -1
-      find(n, rn.right) if rn.right != nil
+      return find(n, rn.right) if rn.right != nil
     else    
-      nodeFound = rn
+      return rn
     end
-    return nodeFound
   end
   
-  def delete(n, rt = @root)
-    node = find(n) 
+  def delete(num, rt = @root)
+    node = find(num)
     if node != nil
-      puts "\nDeleted"
+      pnode = getParent(node)
+      childNode = nil
+      case node.hasChildren()
+        when 0 #leaf Node          
+          pnode == nil ? @root = nil : (pnode.left == node ? pnode.left = nil : pnode.right = nil)
+        when 1 #one child
+          node.left == nil ? childNode = node.right : childNode = node.left
+          if pnode == nil
+            @root = childNode
+          else          
+            pnode.left == node ? pnode.left = childNode : pnode.right = childNode
+          end
+        else #two chinldren
+          # Replace parent child(left or right) with node's left child and 
+          # append the node's right child to right position       
+          rightNode = node.right
+          oldRightNode = node.left.right
+          node.left.right = node.right
+          
+          pnode == nil ? @root = node.left : pnode.left = node.left
+          
+          while rightNode != nil
+            if rightNode.left == nil
+              rightNode.left = oldRightNode
+              break
+            end
+            rightNode = rightNode.left
+          end
+      end
+      puts "\nThe node is deleted"
     end
   end
+  
+  def getParent(n, rn = @root)
+    if (rn.left == n || rn.right == n)
+      return rn
+    elsif rn != nil
+      case rn <=> n
+        when -1
+          getParent(n, rn.right)
+        when 1
+          getParent(n, rn.left)
+        else
+          return nil
+      end
+    else
+      return nil
+    end
+  end
+  
+  def level_order
+    queue = [@root]
+    data = []
+    
+    until queue.empty?
+      node = queue.shift()
+      block_given? ? yield(node) : data.push(node.data)
+      queue.unshift(node.left) if node.left
+      queue.unshift(node.right) if node.right
+    end
+    
+    return data unless block_given?
+  end
+  
+  def inorder(data = [], rt = @root)
+    inorder(data, rt.left) if rt.left
+    block_given? ? yield(rt) : data.push(rt.data)
+    inorder(data, rt.right) if rt.right
+    
+    return data unless block_given?
+  end
+  
+  def preorder(data = [], rt = @root)
+    block_given? ? yield(rt) : data.push(rt.data)
+    preorder(data, rt.left) if rt.left    
+    preorder(data, rt.right) if rt.right
+    
+    return data unless block_given?
+  end
+  
+  def postorder(data = [], rt = @root)
+    postorder(data, rt.left) if rt.left    
+    postorder(data, rt.right) if rt.right
+    block_given? ? yield(rt) : data.push(rt.data)
+    
+    return data unless block_given?
+  end
+    
+    def depth node=@root
+        return 0 if !node
+        depth = 1
+        leftDepth = depth(node.left)
+        rightDepth = depth(node.right)
+        depth += leftDepth > rightDepth ? leftDepth : rightDepth
+    end
+
+    def balanced?
+        leftDepth = depth(@root.left)
+        rightDepth = depth(@root.right)
+        diff = (leftDepth - rightDepth).abs
+        return diff < 2 ? true : false
+    end
+
+    def rebalance!
+        arr = inorder
+        initialize(arr)
+    end
 end
