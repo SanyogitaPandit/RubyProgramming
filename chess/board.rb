@@ -41,29 +41,19 @@ class Board
     puts "\n"
   end
 
-  def processInput(player)
-    puts "#{player.name}'s turn(#{player.isWhite ? 'White' : 'Black'} Pieces): "    
-    oldPos = nil
-    newPos = nil
-    while true
-        puts "Please enter your move: "
-        input = gets.chomp.split().map(&:to_i)    
-        oldPos = Position.new(input[0], input[1])
-        newPos = Position.new(input[2], input[3])
- 
-        if !oldPos.valid? ||
-           !player.chessmen.include?(@grid[oldPos.x][oldPos.y])
-            puts "Invalid original position!"
-        elsif !newPos.valid? ||
-              player.chessmen.include?(@grid[newPos.x][newPos.y]) ||
-              !movePiece(@grid[oldPos.x][oldPos.y], newPos)
-            puts "That was invalid move!"
-        else
-            break;
-        end
-    end
-
-    placePiece(@grid[oldPos.x][oldPos.y], oldPos)    
+  def validate(player, oldPos, newPos)
+    if !oldPos.valid? ||
+       !player.chessmen.include?(@grid[oldPos.x][oldPos.y])
+        puts "Invalid original position!"
+        return false
+    elsif !newPos.valid? ||
+          player.chessmen.include?(@grid[newPos.x][newPos.y]) ||
+          !movePiece(@grid[oldPos.x][oldPos.y], newPos)
+        puts "That was invalid move!"
+        return false
+    else
+        return true
+    end   
   end
 
   def movePiece (piece, newPos)

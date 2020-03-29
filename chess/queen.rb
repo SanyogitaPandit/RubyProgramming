@@ -30,7 +30,7 @@ class Queen
       return false
     end
 
-    return true if (newPos.x == @pos.x) || (newPos.y == @pos.y)
+    return true if (newPos.x == @pos.x) || (  newPos.y == @pos.y)
     return true if (newPos.x - @pos.x).abs == (newPos.y - @pos.y).abs
 
     return false

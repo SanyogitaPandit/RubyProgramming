@@ -12,7 +12,7 @@ class Player
         @name = name
         @isWhite = iswhite
         @chessmen = Array.new 
-        @chessmen = getPieces()        
+        @chessmen = getPieces()      
     end
 
     def getPieces
